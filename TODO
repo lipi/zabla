@@ -1,0 +1,25 @@
+
+DONE:
+
+* remote command execution via telnet
+
+* adding iptables monitoring rules
+
+* polling iptables every minute
+
+
+TODO:
+
+* collecting stats
+
+* web page with graph
+
+* check usage against quota
+
+* add credit
+
+* adding iptables blocking rules
+
+* web redirection
+
+* web admin
