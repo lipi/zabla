@@ -1,12 +1,13 @@
 
 import telnetlib
 import socket
+import logging
 
 import config
 
 
 def _execute(cmd):
-    # print('execute:' + cmd)
+    logging.debug('execute:' + cmd)
     session = telnetlib.Telnet(config.host, config.port, timeout=5.0)
 
     session.read_until('ogin: ')
@@ -19,15 +20,22 @@ def _execute(cmd):
 
     session.write('exit\n')
     response = session.read_all()
+    logging.debug('response:' + response)
     session.close()  # be nice to remote host
     return response
 
 
-def execute(cmd):
-    try:
-        return _execute(cmd)
-    except socket.timeout:
-        return ' '  # avoid being None
+def execute(cmd, tries=3):
+    response = None
+    while tries > 0 and not response:
+        try:
+            response = _execute(cmd)
+        except socket.timeout:
+            logging.debug('timeout')
+            pass
+
+    return response
+
 
 if __name__ == '__main__':
     print(execute('iptables -L -vx'))

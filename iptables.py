@@ -10,7 +10,9 @@ def list_rules():
 
 def cleanup_counter():
     remote.execute('iptables -F COUNTER')
-    while '0 references' not in list_rules():  # left behind by previous runs
+    rules = list_rules()
+    while ('0 references' not in rules) and ('No chain' not in rules):  # left behind by previous runs
+        rules = list_rules()
         remote.execute('iptables -D FORWARD -j COUNTER')
 
 
@@ -22,8 +24,11 @@ def add_counter(address):
     remote.execute('iptables -A COUNTER --dst ' + address)
 
 
-def read_counters():
-    response = remote.execute('iptables -L COUNTER -vx; iptables -Z COUNTER')
+def read_counters(tries=3):
+    """Returns dictionary of IP address keys and data usage values"""
+    response = None
+    while not response and tries > 0:
+        response = remote.execute('iptables -L COUNTER -vx; iptables -Z COUNTER')
     lines = [x for x in response.splitlines(False) if 'anywhere' in x]
     counters = {}
     for line in lines:
