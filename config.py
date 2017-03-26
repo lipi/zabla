@@ -7,7 +7,7 @@
 host = '192.168.1.1'
 port = 23
 user = 'admin'
-password = '<insert password here>'
+password = '<insert password here>'  # or set it in config_local.py
 
 update_seconds = 60
 
@@ -18,3 +18,9 @@ nodes = {
     '192.168.1.4': "Chromecast",
     '192.168.1.5': "Her phone",
 }
+
+try:
+    from config_local import *
+except ImportError:
+    print('No local config')
+    pass
