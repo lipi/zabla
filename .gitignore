@@ -1,2 +1,5 @@
+*.pyc
+.idea
 config_local.py
-db.json
+traffic.json
+users.json

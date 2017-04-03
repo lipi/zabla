@@ -1,1 +1,4 @@
+ujson
 tinydb
+matplotlib
+mpld3

@@ -1,6 +1,8 @@
 
 import datetime
 import time
+import logging
+
 import remote
 
 
@@ -9,6 +11,7 @@ def list_rules():
 
 
 def cleanup_counter():
+    logging.debug('cleaning up existing counters...')
     remote.execute('iptables -F COUNTER')
     rules = list_rules()
     while ('0 references' not in rules) and ('No chain' not in rules):  # left behind by previous runs
@@ -17,6 +20,7 @@ def cleanup_counter():
 
 
 def init_counter():
+    logging.debug('initializing counter...')
     remote.execute('iptables -N COUNTER; iptables -I FORWARD -j COUNTER')
 
 
@@ -44,10 +48,6 @@ if __name__ == '__main__':
     add_counter('192.168.1.2')
     add_counter('192.168.1.3')
     add_counter('192.168.1.4')
-    add_counter('192.168.1.103')
-    add_counter('192.168.1.6')
-    add_counter('192.168.1.7')
-    add_counter('192.168.1.8')
 
     while True:
         print(datetime.datetime.utcnow().strftime('%H:%M:%S ')),

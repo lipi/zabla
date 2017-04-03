@@ -7,7 +7,7 @@ import config
 
 
 def _execute(cmd):
-    logging.debug('execute:' + cmd)
+    #logging.debug('execute:' + cmd)
     session = telnetlib.Telnet(config.host, config.port, timeout=5.0)
 
     session.read_until('ogin: ')
@@ -20,7 +20,7 @@ def _execute(cmd):
 
     session.write('exit\n')
     response = session.read_all()
-    logging.debug('response:' + response)
+    #logging.debug('response:' + response)
     session.close()  # be nice to remote host
     return response
 
@@ -31,8 +31,11 @@ def execute(cmd, tries=3):
         try:
             response = _execute(cmd)
         except socket.timeout:
-            logging.debug('timeout')
+            #logging.debug('timeout')
             pass
+        except EOFError as eof:
+            #logging.info(eof)
+            break
 
     return response
 
