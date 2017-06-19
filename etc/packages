@@ -1,0 +1,19 @@
+enable ssh (raspi-config)
+
+
+graphite-carbon graphite-web
+grafana (dpkg using local file)
+apache2
+
+copy graphite-web.conf to apache2
+
+network-manager (to change hostname)
+vim
+emacs
+rsync
+git
+
+# make grafana autostart
+sudo systemctl enable grafana-server.service
+
+# see less /usr/share/doc/graphite-web/README.Debian

@@ -53,3 +53,6 @@ if __name__ == '__main__':
         print(datetime.datetime.utcnow().strftime('%H:%M:%S ')),
         print read_counters()
         time.sleep(2)
+
+
+# iptables -t nat -A PREROUTING -p tcp --source 192.168.1.2 --dport 80 -j DNAT --to-destination 192.168.1.100:80

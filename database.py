@@ -1,6 +1,6 @@
 
 import logging
-import datetime
+
 
 # TODO: use thread-safe DB instead of tinydb
 import tinydb
@@ -9,64 +9,63 @@ import tinydb
 class Database:
 
     def __init__(self):
-        self.traffic = tinydb.TinyDB('traffic.json')
-        self.users = tinydb.TinyDB('users.json')
+        self.devices = tinydb.TinyDB('devices.json')
+        self.counters = tinydb.TinyDB('counters.json')
 
-    def add_traffic(self, time, address, nbytes, seconds):
-        if 0 == nbytes:
-            return  # no point saving an empty entry
-        entry = {'timestamp': int(time.strftime('%s')),  # seconds since Epoch, cheap to compare
-                 'address': address,
-                 'bytes': nbytes,
-                 'seconds': seconds}
-        logging.debug(entry)
-        self.traffic.insert(entry)
+    def add_device(self, user, device, mac='00:00:00:00:00:00'):
+        query = tinydb.Query()
+        row = self.devices.get(query.mac == mac)
+        if row:
+            self.devices.update({'user': user, 'device': device}, query.mac == mac)
+        else:
+            self.devices.insert({'user': user, 'device': device, 'mac': mac})
 
-    def get_traffic(self,
-                    address,
-                    start=datetime.datetime.fromtimestamp(0),
-                    end=datetime.datetime.utcnow()):
-        start_seconds = start.strftime('%s')
-        end_seconds = end.strftime('%s')
-        node = tinydb.Query()
-        return self.traffic.search((node.address == address) &
-                                   (start_seconds <= node.timestamp < end_seconds))
+    def all_macs(self):
+        return [x['mac'] for x in self.devices.all()]
 
-    def add_user(self, name, mac='00:00:00:00:00:00'):
-        self.users.insert({'name': name, 'seconds': 0, 'mac': mac})
+    def user_of(self, mac):
+        query = tinydb.Query()
+        row = self.devices.get(query.mac == mac)
+        if row:
+            user = row['user']
+        else:
+            user = ''
+        return user
 
-    def all_users(self):
-        return [x['name'] for x in self.users.all()]
+    def add_seconds(self, user, seconds):
+        logging.debug("Adjusting {}'s time by {} seconds".format(user, seconds))
+        current = self.get_seconds(user)
+        counter = tinydb.Query()
+        eid = self.counters.update({'seconds': current + seconds}, counter.user == user)
+        if not eid:
+            self.counters.insert({'seconds':seconds, 'user': user})
 
-    def add_seconds(self, name, seconds):
-        current = self.get_seconds(name)
-        user = tinydb.Query()
-        self.users.update({'seconds': current + seconds}, user.name == name)
-
-    def get_seconds(self, name):
-        user = tinydb.Query()
+    def get_seconds(self, user):
+        counter = tinydb.Query()
         seconds = 0
         try:
-            seconds = self.users.get((user.name == name))['seconds']
-        except TypeError:
-            pass
+            seconds = self.counters.get(counter.user == user)['seconds']
+        except Exception as ex:
+            print ex
         return seconds
 
-    def adjust_seconds(self, mac, seconds):
-        logging.debug("Adjusting {}'s time by {} seconds".format(mac, seconds))
-        user = tinydb.Query()
-        row = self.users.get((user.mac == mac))
-        if row:
-            self.add_seconds(row['name'], seconds)
+    def set_seconds(self, user, seconds):
+        logging.debug("Resetting {}'s time to {} seconds".format(user, seconds))
+        counter = tinydb.Query()
+        try:
+            self.counters.update({'seconds': seconds}, counter.user == user)
+        except Exception as ex:
+            print ex
 
 
 if __name__ == '__main__':
     db = Database()
-    db.add_user('test')
-    db.add_seconds('test', 10)
-    print db.get_seconds('test')
-    db.add_seconds('test', 10)
-    print db.get_seconds('test')
-
+    db.add_device('testuser', 'testdevice', 'testmac')
+    db.add_seconds('testuser', 10)
+    print db.get_seconds('testuser')
+    db.add_seconds('testuser', 10)
+    print db.get_seconds('testuser')
+    db.set_seconds('testuser', 0)
+    print db.get_seconds('testuser')
 
 

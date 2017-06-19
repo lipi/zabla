@@ -16,6 +16,9 @@ users = [
     ["somebody's phone", 'aa:bb:cc:dd:ee:ff']
 ]
 
+carbon_server = 'localhost'
+carbon_port = 2003
+
 try:
     from config_local import *
 except ImportError:

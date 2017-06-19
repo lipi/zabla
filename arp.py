@@ -15,10 +15,14 @@ def is_ip(text):
 def addresses():
     """Return list of IP,MAC pairs"""
     # normally 'arp -n'
-    result = remote.execute('arp show').splitlines(False)
-    lines = [x.split() for x in result if len(x) > 0 and is_ip(x.split()[0])]
-    pairs = [(x[0], x[3]) for x in lines]
-    return pairs
+    output = remote.execute('arp show')
+    try:
+        result = output.splitlines(False)
+        lines = [x.split() for x in result if len(x) > 0 and is_ip(x.split()[0])]
+        pairs = [(x[0], x[3].upper()) for x in lines]
+        return pairs
+    except AttributeError:
+        return []
 
 
 if __name__ == '__main__':
