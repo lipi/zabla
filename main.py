@@ -8,12 +8,18 @@ import iptables
 import arp
 import database
 import traffic
+from misc import timestamp
 
 
 def bandwidth(num, sec):
     if sec == 0:
         return 0
     return num / sec
+
+
+def wait_for_next(period):
+    ts = timestamp(datetime.datetime.utcnow())
+    time.sleep(period - (ts % period))
 
 
 if __name__ == '__main__':
@@ -31,8 +37,10 @@ if __name__ == '__main__':
     ip_mac = dict(arp.addresses())
 
     while True:
-        counters = iptables.read_counters()
+        wait_for_next(config.sampling_interval)
         now = datetime.datetime.utcnow()
+
+        counters = iptables.read_counters()
         logging.info(counters)
 
         for address in counters:
@@ -47,10 +55,12 @@ if __name__ == '__main__':
             # reduce users' credits if they seem to be using the net
             if bandwidth(num_bytes, seconds) > config.bandwidth_limit:
                 user = db.user_of(mac)
-                db.add_seconds(user=user, seconds=-seconds)
+                if user:
+                    db.add_seconds(user=user, seconds=-seconds)
 
-                # TODO: add all at once using pickle interface to reduce traffic
-                traffic.add_counter(now, user, counter=db.get_seconds(user))
+                    # TODO: add all at once using pickle interface to reduce traffic
+                    traffic.add_counter(now, user, counter=int(db.get_seconds(user)))
+                    traffic.add_usage(now, user)
 
         previous_time = now
 
@@ -63,5 +73,3 @@ if __name__ == '__main__':
             if ip not in counters:
                 iptables.add_counter(ip)
 
-        # TODO: proper scheduling
-        time.sleep(config.sampling_interval)

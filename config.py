@@ -10,7 +10,7 @@ user = 'admin'
 password = '<insert password here>'  # or set it in config_local.py
 
 sampling_interval = 60  # seconds
-bandwidth_limit = 1000  # bytes per second
+bandwidth_limit = 100  # bytes per second
 users = [
     ["example", '12:34:56:78:90:ab'],
     ["somebody's phone", 'aa:bb:cc:dd:ee:ff']

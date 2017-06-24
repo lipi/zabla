@@ -1,4 +1,5 @@
 
+import os
 import logging
 
 
@@ -9,8 +10,12 @@ import tinydb
 class Database:
 
     def __init__(self):
-        self.devices = tinydb.TinyDB('devices.json')
-        self.counters = tinydb.TinyDB('counters.json')
+        try:
+            os.mkdir('db')
+        except OSError:
+            pass
+        self.devices = tinydb.TinyDB('db/devices.json')
+        self.counters = tinydb.TinyDB('db/counters.json')
 
     def add_device(self, user, device, mac='00:00:00:00:00:00'):
         query = tinydb.Query()
@@ -38,7 +43,7 @@ class Database:
         counter = tinydb.Query()
         eid = self.counters.update({'seconds': current + seconds}, counter.user == user)
         if not eid:
-            self.counters.insert({'seconds':seconds, 'user': user})
+            self.counters.insert({'seconds': seconds, 'user': user})
 
     def get_seconds(self, user):
         counter = tinydb.Query()

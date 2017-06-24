@@ -4,10 +4,7 @@ import logging
 import datetime
 
 import config
-
-
-def timestamp(time):
-    return int((time - datetime.datetime(1970, 1, 1)).total_seconds())
+from misc import timestamp
 
 
 def add_bytes(time, address, nbytes, seconds):
@@ -15,19 +12,17 @@ def add_bytes(time, address, nbytes, seconds):
         return  # no point saving an empty entry
 
     bandwidth = float(nbytes)/seconds
-    message = 'internet.bandwidth.{} {} {}'.format(address, int(bandwidth), timestamp(time))
+    message = 'internet.bandwidth.{} {} {}'.format(address, int(bandwidth), int(timestamp(time)))
     send(message)
-    if bandwidth > config.bandwidth_limit:
-        add_usage(time, address)
 
 
-def add_usage(time, address):
-    message = 'internet.usage.{} 1 {}'.format(address, timestamp(time))
+def add_usage(time, user):
+    message = 'internet.usage.{} 1 {}'.format(user, int(timestamp(time)))
     send(message)
 
 
 def add_counter(time, user, counter):
-    message = 'internet.counter.{} {} {}'.format(user, counter, timestamp(time))
+    message = 'internet.counter.{} {} {}'.format(user, counter, int(timestamp(time)))
     send(message)
 
 
