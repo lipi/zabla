@@ -1,1 +1,4 @@
 tinydb
+Flask
+flask-table
+wtforms
